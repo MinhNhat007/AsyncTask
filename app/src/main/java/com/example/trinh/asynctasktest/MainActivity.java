@@ -10,6 +10,7 @@ import android.widget.ProgressBar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private static int index = 0;
     private ImageView image;
     private Button button;
     private ProgressBar progressBar;
@@ -25,10 +26,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void buttonAction(View view) {
-        final AsyncTaskRunner asyncTaskRunner = new AsyncTaskRunner(MainActivity.this);
         final List<String> data = DataProvider.provideData();
-
-        asyncTaskRunner.execute(data.get(0));
+        index = (index + 1) % data.size();
+        final AsyncTaskRunner asyncTaskRunner = new AsyncTaskRunner(MainActivity.this);
+        asyncTaskRunner.execute(data.get(index));
     }
 
     public ImageView getImage() {
