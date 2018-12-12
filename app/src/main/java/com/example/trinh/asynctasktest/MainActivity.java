@@ -1,46 +1,48 @@
 package com.example.trinh.asynctasktest;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.util.List;
 
+
 public class MainActivity extends AppCompatActivity {
-    private static int index = 0;
-    private ImageView image;
-    private Button button;
-    private ProgressBar progressBar;
+    private ProgressBar mProgressBar;
+    private TextView mTextView;
+    private AsyncTask<String, Integer, List<String>> mMyTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        image = findViewById(R.id.image);
-        button = findViewById(R.id.button);
-        progressBar = findViewById(R.id.progressbar);
+        mProgressBar = findViewById(R.id.progressbar);
+        mTextView = findViewById(R.id.tv);
     }
 
-    public void buttonAction(View view) {
-        final List<String> data = DataProvider.provideData();
-        index = (index + 1) % data.size();
-        final AsyncTaskRunner asyncTaskRunner = new AsyncTaskRunner(MainActivity.this);
-        asyncTaskRunner.execute(data.get(index));
+    public void buttonStartAction(View view) {
+        clearText();
+        mMyTask = new AsyncTaskRunner(this);
+        mMyTask.execute("Task 1", "Task 2", "Task 3", "Task 4", "Task 5");
     }
 
-    public ImageView getImage() {
-        return this.image;
+    public void buttonCancelAction(View view) {
+        mMyTask.cancel(true);
     }
 
-    public Button getButton() {
-        return this.button;
+    private void clearText() {
+        mTextView.setText("");
     }
 
-    public ProgressBar getProgressBar() {
-        return this.progressBar;
+    public TextView getMTextView() {
+        return mTextView;
+    }
+
+    public ProgressBar getMProgressBar() {
+        return mProgressBar;
     }
 }

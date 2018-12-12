@@ -1,25 +1,17 @@
 package com.example.trinh.asynctasktest;
 
-import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
-public class AsyncTaskRunner extends AsyncTask<String, Void, Bitmap> {
-    private static final int LAYOUT_PARAM = 100;
-    private static final String ERROR_MESSAGE = "Some error occurred!";
-
+public class AsyncTaskRunner extends AsyncTask<String, Integer, List<String>> {
     private final WeakReference<MainActivity> activityReference;
 
     AsyncTaskRunner(final MainActivity context) {
@@ -27,63 +19,71 @@ public class AsyncTaskRunner extends AsyncTask<String, Void, Bitmap> {
     }
 
     @Override
-    protected Bitmap doInBackground(String... urls) {
-        final String url = urls[0];
-        return getBitmap(url);
-    }
-
-    @Override
     protected void onPreExecute() {
         startProgressBar();
-        freezeWindow();
+        writeMessage(Color.BLUE, "Starting task....");
     }
 
     @Override
-    protected void onPostExecute(Bitmap bitmap) {
-        final MainActivity mainActivity = activityReference.get();
-        final ImageView image = activityReference.get().getImage();
+    protected List<String> doInBackground(String... tasks) {
+        List<String> result = new ArrayList<>();
 
-        stopProgressBar();
-        UnfreezeWindow();
-
-        if (bitmap != null) {
-            image.setImageBitmap(bitmap);
-        } else {
-            Toast.makeText(mainActivity, ERROR_MESSAGE, Toast.LENGTH_LONG).show();
+        for (int i = 0; i < tasks.length; i++) {
+            result.add(tasks[i]);
+            sleep(1);
+            int percent = getPercentInCurrentTask(tasks.length, i);
+            publishProgress(percent);
+            if (isCancelled()) {
+                break;
+            }
         }
+
+        return result;
     }
 
-    @Nullable
-    private Bitmap getBitmap(String url) {
-        Bitmap bitmap = null;
-        try (final InputStream in = (InputStream) new URL(url).getContent()) {
-            bitmap = BitmapFactory.decodeStream(in);
-        } catch (Exception e) {
-            e.printStackTrace();
+    @Override
+    protected void onCancelled() {
+        writeMessage(Color.RED, "Operation is cancel...");
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... progress) {
+        writeMessage(Color.BLUE, String.format(Locale.US, "Completed....%d%%", progress[0]));
+    }
+
+    @Override
+    protected void onPostExecute(List<String> results) {
+        writeMessage(Color.BLUE, "Done....");
+        for (String result : results) {
+            writeMessage(Color.BLUE, result);
         }
 
-        return bitmap;
+        stopProgressBar();
+    }
+
+    private void writeMessage(int color, String message) {
+        final TextView mTextView = activityReference.get().getMTextView();
+        mTextView.setTextColor(color);
+        mTextView.setText(TextUtils.concat(mTextView.getText(), "\n", message));
     }
 
     private void startProgressBar() {
-        activityReference.get().getProgressBar().setProgressTintList(ColorStateList.valueOf(Color.RED));
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LAYOUT_PARAM, LAYOUT_PARAM);
-        params.addRule(RelativeLayout.CENTER_IN_PARENT);
-        activityReference.get().getProgressBar().setVisibility(View.VISIBLE);
-    }
-
-    private void freezeWindow() {
-        activityReference.get().getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        activityReference.get().getMProgressBar().setVisibility(View.VISIBLE);
     }
 
     private void stopProgressBar() {
-        activityReference.get().getProgressBar().setVisibility(View.GONE);
+        activityReference.get().getMProgressBar().setVisibility(View.GONE);
     }
 
-    private void UnfreezeWindow() {
-        activityReference.get().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    private int getPercentInCurrentTask(float sum, int current) {
+        return (int) (((current + 1) / sum) * 100);
     }
 
+    private void sleep(int second) {
+        try {
+            Thread.sleep(second * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

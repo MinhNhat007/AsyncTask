@@ -5,4 +5,6 @@
     <string name="my_image">My Image</string>
     <string name="my_icon">my icon</string>
     <string name="load_image">Load Image</string>
+    <string name="cancel">Cancel</string>
+    <string name="do_asynctask">Do AsyncTask</string>
 </resources>
