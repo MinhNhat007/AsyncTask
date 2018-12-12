@@ -28,15 +28,12 @@ public class AsyncTaskRunner extends AsyncTask<String, Integer, List<String>> {
     protected List<String> doInBackground(String... tasks) {
         List<String> result = new ArrayList<>();
 
-        for (int i = 0; i < tasks.length; i++) {
-            result.add(tasks[i]);
-            sleep(1);
-            int percent = getPercentInCurrentTask(tasks.length, i);
-            publishProgress(percent);
-            if (isCancelled()) {
-                break;
-            }
-        }
+        //run for all task in tasks:
+            //add task to result
+            //sleep 1
+            //calculate percent
+            //publishProgress
+            //check isCancelled() -> break;
 
         return result;
     }
@@ -75,7 +72,7 @@ public class AsyncTaskRunner extends AsyncTask<String, Integer, List<String>> {
         activityReference.get().getMProgressBar().setVisibility(View.GONE);
     }
 
-    private int getPercentInCurrentTask(float sum, int current) {
+    private int getPercentInCurrentTask(int current, float sum) {
         return (int) (((current + 1) / sum) * 100);
     }
 
