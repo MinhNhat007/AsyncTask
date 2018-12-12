@@ -28,15 +28,12 @@ public class AsyncTaskRunner extends AsyncTask<String, Integer, List<String>> {
     protected List<String> doInBackground(String... tasks) {
         List<String> result = new ArrayList<>();
 
-        for (int i = 0; i < tasks.length; i++) {
-            result.add(tasks[i]);
-            sleep(1);
-            int percent = getPercentInCurrentTask(tasks.length, i);
-            publishProgress(percent);
-            if (isCancelled()) {
-                break;
-            }
-        }
+        //for each task in task:
+            //update result
+            //sleep 1 second
+            //calculate percent. for task 1 = 20%, task 2 = 40%
+            //publishProgress
+            //check isCancelled()
 
         return result;
     }
