@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">AsyncTaskTest</string>
+    <string name="sleep_time_in_seconds">Sleep time in Seconds:</string>
+    <string name="run_async_task">Run Async task</string>
+    <string name="my_image">My Image</string>
+    <string name="my_icon">my icon</string>
+    <string name="load_image">Load Image</string>
 </resources>

@@ -1,18 +1,25 @@
 package com.example.trinh.asynctasktest;
 
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 
-import lombok.SneakyThrows;
-
-public class AsyncTaskRunner extends AsyncTask<String, String, String> {
+public class AsyncTaskRunner extends AsyncTask<String, Void, Bitmap> {
     private static final int LAYOUT_PARAM = 100;
+    private static final String ERROR_MESSAGE = "Some error occurred!";
+
     private final WeakReference<MainActivity> activityReference;
 
     AsyncTaskRunner(final MainActivity context) {
@@ -20,24 +27,9 @@ public class AsyncTaskRunner extends AsyncTask<String, String, String> {
     }
 
     @Override
-    @SneakyThrows
-    protected String doInBackground(String... params) {
-        publishProgress("Sleeping...Freezing button");
-
-        final String numberAsString = params[0];
-        int time = convertToSecond(numberAsString);
-
-        Thread.sleep(time);
-
-        return "Slept for " + numberAsString + " seconds";
-    }
-
-    @Override
-    protected void onPostExecute(String result) {
-        stopProgressBar();
-        UnfreezeWindow();
-
-        activityReference.get().getFinalResult().setText(result);
+    protected Bitmap doInBackground(String... urls) {
+        final String url = urls[0];
+        return getBitmap(url);
     }
 
     @Override
@@ -47,20 +39,30 @@ public class AsyncTaskRunner extends AsyncTask<String, String, String> {
     }
 
     @Override
-    protected void onProgressUpdate(String... text) {
-        final String message = text[0];
-        activityReference.get().getFinalResult().setText(message);
+    protected void onPostExecute(Bitmap bitmap) {
+        final MainActivity mainActivity = activityReference.get();
+        final ImageView image = activityReference.get().getImage();
 
+        stopProgressBar();
+        UnfreezeWindow();
+
+        if (bitmap != null) {
+            image.setImageBitmap(bitmap);
+        } else {
+            Toast.makeText(mainActivity, ERROR_MESSAGE, Toast.LENGTH_LONG).show();
+        }
     }
 
-    private void freezeWindow() {
-        activityReference.get().getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-    }
+    @Nullable
+    private Bitmap getBitmap(String url) {
+        Bitmap bitmap = null;
+        try (final InputStream in = (InputStream) new URL(url).getContent()) {
+            bitmap = BitmapFactory.decodeStream(in);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-    private void UnfreezeWindow() {
-        activityReference.get().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        return bitmap;
     }
 
     private void startProgressBar() {
@@ -70,11 +72,18 @@ public class AsyncTaskRunner extends AsyncTask<String, String, String> {
         activityReference.get().getProgressBar().setVisibility(View.VISIBLE);
     }
 
+    private void freezeWindow() {
+        activityReference.get().getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
+
     private void stopProgressBar() {
         activityReference.get().getProgressBar().setVisibility(View.GONE);
     }
 
-    private int convertToSecond(String numberAsString) {
-        return Integer.parseInt(numberAsString) * 1000;
+    private void UnfreezeWindow() {
+        activityReference.get().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
+
 }
