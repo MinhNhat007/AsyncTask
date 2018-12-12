@@ -43,6 +43,7 @@ public class AsyncTaskRunner extends AsyncTask<String, Integer, List<String>> {
 
     @Override
     protected void onCancelled() {
+        stopProgressBar();
         writeMessage(Color.RED, "Operation is cancel...");
     }
 
